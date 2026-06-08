@@ -1,8 +1,8 @@
-from repository.interfaces import PotentialRepository
+from repository.interfaces import EquipmentPotentialRepository
 from repository.duckdb.connection import get_connection
 from typing import List, Tuple
 
-class DuckDBPotentialRepository(PotentialRepository):
+class DuckDBEquipmentPotentialRepository(EquipmentPotentialRepository):
     def get_option_pool_with_prob(self, equipment_type: str, grade: str, line_no: int) -> List[Tuple[int, float]]:
         # 등급별 안전한 option_id 범위 규칙 규칙 적용
         if grade == "Rare":

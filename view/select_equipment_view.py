@@ -2,46 +2,132 @@
 import flet as ft
 from repository import equipment_master_repo
 from service.equipment_service import create_user_equipment
-from view.cube_simulator_view import cube_simulator_view
+from view.enhancement_simulator_view import cube_simulator_view
 
-def select_equipment_view(page: ft.Page):
-    # 💡 [레포지토리 적용] 직접 sql을 실행하지 않고 마스터 레포지토리에서 데이터를 가져옵니다.
-    # get_all() 결과 구조: [(equipment_id, equipment_name, equipment_type), ...]
+EQUIPMENT_IMAGES: dict[int, str] = {
+    1: "1.png",
+    2: "2.png",
+    3: "3.png",
+    4: "4.png",
+    5: "5.png",
+}
+
+
+def select_equipment_view(page: ft.Page) -> ft.Container:
     equipments = equipment_master_repo.get_all()
 
-    # 장비 선택 버튼 클릭 시 발생하는 이벤트
-    def on_equipment_selected(equipment_id):
-        # 💡 [서비스 레이어 적용] 
-        # 이제 ID 계산, 디폴트 스탯 인서트, 최초 잠재옵션(Rare) 부여는 
-        # equipment_service.py의 create_user_equipment 가 전부 알아서 처리합니다!
+    def on_equipment_selected(equipment_id: int) -> None:
         user_equipment_id = create_user_equipment(equipment_id)
-        
-        # 화면 깨끗이 비우고 시뮬레이터 화면 뷰 배치 및 전환
         page.clean()
         page.add(cube_simulator_view(page, user_equipment_id))
 
-    controls = []
+    def go_to_saved(e) -> None:
+        from view.saved_equipment_view import saved_equipment_view
+        page.clean()
+        page.add(saved_equipment_view(page))
+
+    # ── 새 장비 생성 카드 목록 ────────────────────────────────────────────
+    new_equipment_cards: list[ft.Control] = []
     for equipment_id, equipment_name, equipment_type in equipments:
-        controls.append(
-            ft.Button(
-                content=ft.Text(value=equipment_name, size=15, weight=ft.FontWeight.W_500),
+        img_src = EQUIPMENT_IMAGES.get(equipment_id)
+        icon_widget = (
+            ft.Image(src=img_src, width=40, height=40)
+            if img_src
+            else ft.Icon(ft.Icons.SHIELD_OUTLINED, size=36, color=ft.Colors.GREY_400)
+        )
+
+        new_equipment_cards.append(
+            ft.Container(
+                content=ft.Row(
+                    [
+                        icon_widget,
+                        ft.Column(
+                            [
+                                ft.Text(
+                                    equipment_name,
+                                    size=15,
+                                    weight=ft.FontWeight.W_600,
+                                    color=ft.Colors.WHITE,
+                                ),
+                                ft.Text(
+                                    equipment_type,
+                                    size=12,
+                                    color=ft.Colors.GREY_400,
+                                ),
+                            ],
+                            spacing=2,
+                            alignment=ft.MainAxisAlignment.CENTER,
+                        ),
+                    ],
+                    spacing=16,
+                    vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                ),
+                bgcolor=ft.Colors.GREY_800,
+                border_radius=10,
+                padding=ft.Padding(left=16, right=16, top=12, bottom=12),
+                width=300,
                 on_click=lambda e, eid=equipment_id: on_equipment_selected(eid),
-                width=250,
-                height=45
+                ink=True,
             )
         )
 
+    # ── 기존 장비 불러오기 버튼 ───────────────────────────────────────────
+    load_button = ft.Container(
+        content=ft.Row(
+            [
+                ft.Icon(ft.Icons.INVENTORY_2_OUTLINED, color=ft.Colors.TEAL_300, size=22),
+                ft.Text(
+                    "기존 장비 불러오기",
+                    size=15,
+                    weight=ft.FontWeight.W_600,
+                    color=ft.Colors.TEAL_300,
+                ),
+            ],
+            alignment=ft.MainAxisAlignment.CENTER,
+            spacing=10,
+        ),
+        bgcolor=ft.Colors.GREY_800,
+        border_radius=10,
+        padding=ft.Padding(left=16, right=16, top=14, bottom=14),
+        width=300,
+        border=ft.Border(left=ft.BorderSide(1, ft.Colors.TEAL_700), right=ft.BorderSide(1, ft.Colors.TEAL_700), top=ft.BorderSide(1, ft.Colors.TEAL_700), bottom=ft.BorderSide(1, ft.Colors.TEAL_700)),
+        on_click=go_to_saved,
+        ink=True,
+    )
+
+    # ── 전체 레이아웃 ─────────────────────────────────────────────────────
     return ft.Container(
         content=ft.Column(
             [
-                ft.Text("큐브를 돌릴 장비를 선택하세요", size=22, weight=ft.FontWeight.BOLD),
-                ft.Divider(height=10, color=ft.Colors.TRANSPARENT),
-                *controls
+                ft.Text(
+                    "Maple Planet",
+                    size=14,
+                    color=ft.Colors.TEAL_300,
+                    weight=ft.FontWeight.W_500,
+                ),
+                ft.Text(
+                    "강화할 장비를 선택하세요",
+                    size=22,
+                    weight=ft.FontWeight.BOLD,
+                    color=ft.Colors.WHITE,
+                ),
+                ft.Divider(height=4, color=ft.Colors.TRANSPARENT),
+                ft.Text(
+                    "새 장비 생성",
+                    size=13,
+                    color=ft.Colors.GREY_400,
+                    weight=ft.FontWeight.W_500,
+                ),
+                *new_equipment_cards,
+                ft.Divider(height=8, color=ft.Colors.GREY_800),
+                load_button,
             ],
             alignment=ft.MainAxisAlignment.CENTER,
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-            spacing=12
+            spacing=12,
+            scroll=ft.ScrollMode.AUTO,
         ),
         alignment=ft.Alignment(0, 0),
-        padding=30
+        padding=30,
+        expand=True,
     )

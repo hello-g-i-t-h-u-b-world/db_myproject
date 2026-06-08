@@ -89,8 +89,13 @@ CREATE TABLE IF NOT EXISTS equipment_potential (
 """)
 
 # ==================================================
-# item_master
+# item_master  (자식 테이블 먼저 DROP 후 부모 DROP)
 # ==================================================
+conn.execute("DROP TABLE IF EXISTS simulation_usage_log;")
+conn.execute("DROP TABLE IF EXISTS cube_upgrade_prob;")
+conn.execute("DROP TABLE IF EXISTS chaos_scroll_detail;")
+conn.execute("DROP TABLE IF EXISTS scroll_detail;")
+conn.execute("DROP TABLE IF EXISTS item_master;")
 
 conn.execute("""
 CREATE TABLE IF NOT EXISTS item_master (
@@ -103,7 +108,7 @@ CREATE TABLE IF NOT EXISTS item_master (
     price BIGINT NOT NULL,
 
     CHECK (
-        item_type IN ('주문서','큐브')
+        item_type IN ('주문서','혼돈주문서','큐브')
     )
 )
 """)
@@ -111,7 +116,6 @@ CREATE TABLE IF NOT EXISTS item_master (
 # ==================================================
 # scroll_detail
 # ==================================================
-
 conn.execute("""
 CREATE TABLE IF NOT EXISTS scroll_detail (
     item_id INTEGER PRIMARY KEY,
@@ -128,9 +132,24 @@ CREATE TABLE IF NOT EXISTS scroll_detail (
 """)
 
 # ==================================================
+# chaos_scroll_detail
+# ==================================================
+conn.execute("""
+CREATE TABLE IF NOT EXISTS chaos_scroll_detail (
+    item_id      INTEGER PRIMARY KEY,
+    success_rate DOUBLE  NOT NULL,
+    chaos_min    INTEGER NOT NULL,
+    chaos_max    INTEGER NOT NULL,
+
+    FOREIGN KEY (item_id)
+        REFERENCES item_master(item_id)
+)
+""")
+
+
+# ==================================================
 # cube_upgrade_prob
 # ==================================================
-
 conn.execute("""
 CREATE TABLE IF NOT EXISTS cube_upgrade_prob (
     item_id INTEGER NOT NULL,
@@ -230,7 +249,7 @@ CREATE TABLE IF NOT EXISTS simulation_usage_log (
 conn.execute("""
 INSERT OR IGNORE INTO equipment_master VALUES
 (1, '알카드노의 망토', '망토'),
-(2, '리버스 리플하임', '무기'),
+(2, '리버스 니플하임', '무기'),
 (3, '자쿰의 투구', '모자'),
 (4, '하프 이어링', '귀고리'),
 (5, '혼테일의 목걸이', '펜던트')
@@ -240,36 +259,48 @@ INSERT OR IGNORE INTO equipment_master VALUES
 
 conn.execute("""
 INSERT OR IGNORE INTO item_master VALUES
-(1001, '망토 힘 주문서 60%', '주문서', 104588),
-(1002, '망토 힘 주문서 10%', '주문서', 98000),
+(101, '망토 힘 주문서 60%', '주문서', 104588),
+(102, '망토 힘 주문서 10%', '주문서', 98000),
 
-(1003, '두손검 공격력 주문서 100%', '주문서', 79294),
-(1004, '두손검 공격력 주문서 60%', '주문서', 319055),
-(1005, '두손검 공격력 주문서 10%', '주문서', 1587530)
+(103, '두손검 공격력 주문서 100%', '주문서', 79294),
+(104, '두손검 공격력 주문서 60%', '주문서', 319055),
+(105, '두손검 공격력 주문서 10%', '주문서', 1587530)
+""")
+
+# id, 확률, +STR, +공격력
+conn.execute("""
+INSERT OR IGNORE INTO scroll_detail VALUES
+(101, 0.6, 2, 0),
+(102, 0.1, 3, 0),
+
+(103, 1, 0, 1),
+(104, 0.6, 1, 2),
+(105, 0.1, 3, 5)
+""")
+
+# 혼돈의 주문서
+conn.execute("""
+INSERT OR IGNORE INTO item_master VALUES
+(106, '혼돈의 주문서 60%', '혼돈주문서', 1824509)
 """)
 
 conn.execute("""
-INSERT OR IGNORE INTO scroll_detail VALUES
-(1001, 0.6, 2, 0),
-(1002, 0.1, 3, 0),
-
-(1003, 1, 0, 1),
-(1004, 0.6, 1, 2),
-(1005, 0.1, 3, 5)
+INSERT OR IGNORE INTO chaos_scroll_detail VALUES
+(106, 0.6, -5, 5)
 """)
 
 # 큐브
 
 conn.execute("""
 INSERT OR IGNORE INTO item_master VALUES
-(2001, '미라클 큐브', '큐브', 500000)
+(201, '미라클 큐브', '큐브', 500000)
 """)
 
 conn.execute("""
 INSERT OR IGNORE INTO cube_upgrade_prob VALUES
 
-(2001, 'Rare', 'Epic', 0.06),
-(2001, 'Epic', 'Unique', 0.018);
+(201, 'Rare', 'Epic', 0.06),
+(201, 'Epic', 'Unique', 0.018);
 """)
 
 # 잠재옵션
@@ -414,19 +445,19 @@ INSERT OR IGNORE INTO potential_option_pool VALUES
 
 # 부위 별 잠재옵션 (무기)
 conn.execute("""
-INSERT INTO equipment_potential_rule
+INSERT OR IGNORE INTO equipment_potential_rule
 SELECT '무기', option_id
 FROM potential_option_pool
 WHERE option_id BETWEEN 1001 AND 1022;
 """)
 conn.execute("""
-INSERT INTO equipment_potential_rule
+INSERT OR IGNORE INTO equipment_potential_rule
 SELECT '무기', option_id
 FROM potential_option_pool
 WHERE option_id BETWEEN 2001 AND 2018;
 """)
 conn.execute("""
-INSERT INTO equipment_potential_rule
+INSERT OR IGNORE INTO equipment_potential_rule
 SELECT '무기', option_id
 FROM potential_option_pool
 WHERE option_id BETWEEN 4001 AND 4036;
@@ -442,21 +473,21 @@ armor_types = [
 for equipment_type in armor_types:
     for option_id in range(3001, 3016):
         conn.execute(
-            "INSERT INTO equipment_potential_rule VALUES (?, ?)",
+            "INSERT OR IGNORE INTO equipment_potential_rule VALUES (?, ?)",
             [equipment_type, option_id]
         )
 
 for equipment_type in armor_types:
     for option_id in range(5001, 5012):
         conn.execute(
-            "INSERT INTO equipment_potential_rule VALUES (?, ?)",
+            "INSERT OR IGNORE INTO equipment_potential_rule VALUES (?, ?)",
             [equipment_type, option_id]
         )
 
 for equipment_type in armor_types:
     for option_id in range(6001, 6012):
         conn.execute(
-            "INSERT INTO equipment_potential_rule VALUES (?, ?)",
+            "INSERT OR IGNORE INTO equipment_potential_rule VALUES (?, ?)",
             [equipment_type, option_id]
         )
 
@@ -873,35 +904,3 @@ INSERT OR IGNORE INTO potential_option_probability VALUES
 conn.close()
 
 print("DB 초기화 완료")
-
-# init_db.py 맨 아래에 추가할 코드 예시
-
-conn = get_connection()
-
-print("신규 규칙 및 확률 테이블 데이터 삽입 시작...")
-
-# 1. 테스트용 마스터 장비가 있다고 가정 (예: '무기' 타입의 아케인셰이드 두손검)
-# 이미 equipment_master에 데이터가 있다면 이 채우기 로직은 본인의 장비 타입 문자열에 맞추셔야 합니다.
-# 여기서는 예시로 모든 장비 타입이 '무기' 또는 '방어구'라고 가정합니다.
-
-# 2. equipment_potential_rule 테이블 데이터 삽입
-# 기존에 Rare 등급 옵션 ID가 3001 ~ 3015번까지 있었다면, 이 옵션들을 '무기' 타입 장비가 가질 수 있도록 규칙을 등록합니다.
-rare_option_ids = range(3001, 3016)  # 3001부터 3015까지
-epic_option_ids = range(5001, 5012)  # 기존 코드 기준 에픽 범위
-unique_option_ids = range(6001, 6012) # 기존 코드 기준 유니크 범위
-
-# [예시] '무기' 타입 장비가 모든 등급의 옵션을 가질 수 있도록 규칙 추가
-for opt_id in list(rare_option_ids) + list(epic_option_ids) + list(unique_option_ids):
-    conn.execute("""
-        INSERT OR IGNORE INTO equipment_potential_rule (equipment_type, option_id)
-        VALUES (?, ?)
-    """, ["무기", opt_id])  # ⚠️ 본인의 equipment_master에 등록된 'equipment_type' 문자열과 일치해야 합니다!
-
-# 3. potential_option_probability 테이블 데이터 확인
-# 만약 기존에 1줄, 2줄, 3줄 확률을 이 테이블에 다 안 넣으셨다면, line_no(1, 2, 3)별로 확률이 존재해야 합니다.
-# 기존에 작성하셨던 대량의 INSERT 문이 이 테이블(potential_option_probability)로 정상적으로 들어갔는지 확인해 주세요.
-# 만약 테이블명이 바뀌었다면 기존 INSERT 문의 테이블명을 potential_option_probability로 변경해야 합니다.
-
-print("초기 규칙 데이터 삽입 완료!")
-
-conn.close()
