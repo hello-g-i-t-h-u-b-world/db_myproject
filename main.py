@@ -3,7 +3,7 @@ from view.select_equipment_view import select_equipment_view
 
 
 def main(page: ft.Page) -> None:
-    page.title = "메이플 주문서 및 큐브 시뮬레이터"
+    page.title = "메이플플래닛 강화 시뮬레이터"
     page.window.width = 450
     page.window.height = 750
     page.bgcolor = ft.Colors.GREY_900

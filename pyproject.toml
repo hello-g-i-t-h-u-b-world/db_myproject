@@ -12,5 +12,6 @@ dependencies = [
     "flet-datatable2>=0.85.2",
     "kaleido>=1.3.0",
     "pandas>=3.0.3",
+    "pillow>=12.2.0",
     "plotly-express>=0.4.1",
 ]

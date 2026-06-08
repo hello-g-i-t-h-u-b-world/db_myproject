@@ -1,5 +1,4 @@
 import flet as ft
-import threading
 from service.potential_service import use_cube, get_equipment_details, get_current_potential_effects, get_equipment_image_id
 from service.scroll_service import get_available_scrolls, get_equipment_scroll_status, use_scroll
 
@@ -8,40 +7,7 @@ def cube_simulator_view(page: ft.Page, user_equipment_id: int) -> ft.Container:
     # 장비 이미지 (assets/{equipment_id}.png)
     eq_image_id = get_equipment_image_id(user_equipment_id)
 
-    effect_gif = ft.Image(
-        src="effect.gif",
-        width=80,
-        height=80,
-        opacity=0,
-    )
-
-    equipment_image = ft.Stack(
-        controls=[
-            ft.Image(src=f"{eq_image_id}.png", width=80, height=80),
-            effect_gif,
-        ],
-        width=80,
-        height=80,
-    )
-
-    effect_timer = [None]  # 이전 타이머 참조 저장
-
-    def show_effect(duration: float = 0.5) -> None:
-        """이펙트 GIF를 표시하고 duration초 후 숨깁니다."""
-        # 이전 타이머 취소
-        if effect_timer[0] is not None:
-            effect_timer[0].cancel()
-
-        effect_gif.opacity = 1
-        page.update()
-
-        def hide():
-            effect_gif.opacity = 0
-            page.update()
-            effect_timer[0] = None
-
-        effect_timer[0] = threading.Timer(duration, hide)
-        effect_timer[0].start()
+    equipment_image = ft.Image(src=f"{eq_image_id}.png", width=80, height=80)
 
 
     GRADE_COLORS = {
@@ -132,7 +98,6 @@ def cube_simulator_view(page: ft.Page, user_equipment_id: int) -> ft.Container:
         page.update()
 
         next_grade, is_tiered_up = use_cube(user_equipment_id)
-        show_effect()
         refresh_ui(can_update=False)
 
         if is_tiered_up:
@@ -162,8 +127,6 @@ def cube_simulator_view(page: ft.Page, user_equipment_id: int) -> ft.Container:
 
         selected_item_id = selected_scroll_id[0]
         success, result_msg = use_scroll(user_equipment_id, selected_item_id)
-        if success:
-            show_effect()
         refresh_ui(can_update=False)
 
         page.snack_bar = ft.SnackBar(

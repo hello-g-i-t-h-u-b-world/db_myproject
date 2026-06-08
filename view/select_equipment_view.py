@@ -100,7 +100,7 @@ def select_equipment_view(page: ft.Page) -> ft.Container:
         content=ft.Column(
             [
                 ft.Text(
-                    "Maple Planet",
+                    "Maple Planet Enhancement Simulator",
                     size=14,
                     color=ft.Colors.TEAL_300,
                     weight=ft.FontWeight.W_500,
@@ -114,7 +114,7 @@ def select_equipment_view(page: ft.Page) -> ft.Container:
                 ft.Divider(height=4, color=ft.Colors.TRANSPARENT),
                 ft.Text(
                     "새 장비 생성",
-                    size=13,
+                    size=15,
                     color=ft.Colors.GREY_400,
                     weight=ft.FontWeight.W_500,
                 ),
