@@ -1,14 +1,16 @@
 import flet as ft
 from service.potential_service import use_cube, get_equipment_details, get_current_potential_effects, get_equipment_image_id
 from service.scroll_service import get_available_scrolls, get_equipment_scroll_status, use_scroll
+from service.equipment_service import get_equipment_image_path, get_item_image_path
 
 
 def cube_simulator_view(page: ft.Page, user_equipment_id: int) -> ft.Container:
-    # 장비 이미지 (assets/{equipment_id}.png)
     eq_image_id = get_equipment_image_id(user_equipment_id)
+    eq_image_path = get_equipment_image_path(eq_image_id)
 
-    equipment_image = ft.Image(src=f"{eq_image_id}.png", width=80, height=80)
+    equipment_image = ft.Image(src=eq_image_path, width=80, height=80)
 
+    cube_image_path = get_item_image_path(201)  # 미라클 큐브 item_id = 201
 
     GRADE_COLORS = {
         "Rare": ft.Colors.BLUE_400,
@@ -147,7 +149,7 @@ def cube_simulator_view(page: ft.Page, user_equipment_id: int) -> ft.Container:
     cube_button = ft.Button(
         content=ft.Row(
             [
-                ft.Image(src="미라클큐브.png", width=28, height=28),
+                ft.Image(src=cube_image_path, width=28, height=28),
                 ft.Text(
                     "미라클 큐브 사용",
                     color=ft.Colors.WHITE,
@@ -243,7 +245,7 @@ def cube_simulator_view(page: ft.Page, user_equipment_id: int) -> ft.Container:
             card = ft.Container(
                 content=ft.Row(
                     [
-                        ft.Image(src=f"{sid}.png", width=36, height=36),
+                        ft.Image(src=get_item_image_path(sid), width=36, height=36),
                         ft.Column(
                             [
                                 ft.Text(sname, size=13, color=ft.Colors.WHITE, weight=ft.FontWeight.W_600),

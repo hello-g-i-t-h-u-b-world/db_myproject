@@ -1,16 +1,8 @@
 # view/select_equipment_view.py
 import flet as ft
 from repository import equipment_master_repo
-from service.equipment_service import create_user_equipment
+from service.equipment_service import create_user_equipment, get_equipment_image_path
 from view.enhancement_simulator_view import cube_simulator_view
-
-EQUIPMENT_IMAGES: dict[int, str] = {
-    1: "1.png",
-    2: "2.png",
-    3: "3.png",
-    4: "4.png",
-    5: "5.png",
-}
 
 
 def select_equipment_view(page: ft.Page) -> ft.Container:
@@ -29,7 +21,7 @@ def select_equipment_view(page: ft.Page) -> ft.Container:
     # ── 새 장비 생성 카드 목록 ────────────────────────────────────────────
     new_equipment_cards: list[ft.Control] = []
     for equipment_id, equipment_name, equipment_type in equipments:
-        img_src = EQUIPMENT_IMAGES.get(equipment_id)
+        img_src = get_equipment_image_path(equipment_id)
         icon_widget = (
             ft.Image(src=img_src, width=40, height=40)
             if img_src

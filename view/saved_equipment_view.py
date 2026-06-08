@@ -1,19 +1,12 @@
 # view/saved_equipment_view.py
 import flet as ft
 from service.user_equipment_service import get_all_user_equipments
+from service.equipment_service import get_equipment_image_path
 
 GRADE_COLORS = {
     "Rare": ft.Colors.BLUE_400,
     "Epic": ft.Colors.PURPLE_400,
     "Unique": ft.Colors.AMBER_500,
-}
-
-EQUIPMENT_IMAGES: dict[int, str] = {
-    1: "1.png",
-    2: "2.png",
-    3: "3.png",
-    4: "4.png",
-    5: "5.png",
 }
 
 
@@ -64,7 +57,7 @@ def saved_equipment_view(page: ft.Page) -> ft.Container:
             grade = eq["potential_grade"]
             grade_color = GRADE_COLORS.get(grade, ft.Colors.WHITE)
 
-            img_src = EQUIPMENT_IMAGES.get(eid)
+            img_src = get_equipment_image_path(eid)
             icon_widget = (
                 ft.Image(src=img_src, width=44, height=44)
                 if img_src

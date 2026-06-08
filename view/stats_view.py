@@ -2,6 +2,7 @@
 import flet as ft
 from service.stats_service import get_simulation_result
 from service.potential_service import get_equipment_image_id
+from service.equipment_service import get_equipment_image_path
 
 GRADE_COLORS = {
     "Rare": ft.Colors.BLUE_400,
@@ -27,7 +28,7 @@ def stats_view(page: ft.Page, user_equipment_id: int) -> ft.Container:
 
     eq_image_id = get_equipment_image_id(user_equipment_id)
     equipment_image = ft.Image(
-        src=f"{eq_image_id}.png",
+        src=get_equipment_image_path(eq_image_id),
         width=44,
         height=44,
     )

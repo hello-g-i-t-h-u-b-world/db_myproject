@@ -10,9 +10,11 @@ conn.execute("""
 CREATE TABLE IF NOT EXISTS equipment_master (
     equipment_id INTEGER PRIMARY KEY,
     equipment_name VARCHAR NOT NULL,
-    equipment_type VARCHAR NOT NULL
+    equipment_type VARCHAR NOT NULL,
+    image_path VARCHAR
 )
 """)
+conn.execute("ALTER TABLE equipment_master ADD COLUMN IF NOT EXISTS image_path VARCHAR")
 
 # ==================================================
 # user_equipment
@@ -107,11 +109,14 @@ CREATE TABLE IF NOT EXISTS item_master (
 
     price BIGINT NOT NULL,
 
+    image_path VARCHAR,
+
     CHECK (
         item_type IN ('주문서','혼돈주문서','큐브')
     )
 )
 """)
+conn.execute("ALTER TABLE item_master ADD COLUMN IF NOT EXISTS image_path VARCHAR")
 
 # ==================================================
 # scroll_detail
@@ -248,24 +253,35 @@ CREATE TABLE IF NOT EXISTS simulation_usage_log (
 
 conn.execute("""
 INSERT OR IGNORE INTO equipment_master VALUES
-(1, '알카드노의 망토', '망토'),
-(2, '리버스 니플하임', '무기'),
-(3, '자쿰의 투구', '모자'),
-(4, '하프 이어링', '귀고리'),
-(5, '혼테일의 목걸이', '펜던트')
+(1, '알카드노의 망토', '망토', '1.png'),
+(2, '리버스 니플하임', '무기', '2.png'),
+(3, '자쿰의 투구', '모자', '3.png'),
+(4, '하프 이어링', '귀고리', '4.png'),
+(5, '혼테일의 목걸이', '펜던트', '5.png')
 """)
+
+# 기존 행에 image_path 없으면 업데이트
+conn.execute("UPDATE equipment_master SET image_path = '1.png' WHERE equipment_id = 1 AND image_path IS NULL")
+conn.execute("UPDATE equipment_master SET image_path = '2.png' WHERE equipment_id = 2 AND image_path IS NULL")
+conn.execute("UPDATE equipment_master SET image_path = '3.png' WHERE equipment_id = 3 AND image_path IS NULL")
+conn.execute("UPDATE equipment_master SET image_path = '4.png' WHERE equipment_id = 4 AND image_path IS NULL")
+conn.execute("UPDATE equipment_master SET image_path = '5.png' WHERE equipment_id = 5 AND image_path IS NULL")
 
 # 주문서
 
 conn.execute("""
 INSERT OR IGNORE INTO item_master VALUES
-(101, '망토 힘 주문서 60%', '주문서', 104588),
-(102, '망토 힘 주문서 10%', '주문서', 98000),
+(101, '망토 힘 주문서 60%', '주문서', 104588, '101.png'),
+(102, '망토 힘 주문서 10%', '주문서', 98000, '102.png'),
 
-(103, '두손검 공격력 주문서 100%', '주문서', 79294),
-(104, '두손검 공격력 주문서 60%', '주문서', 319055),
-(105, '두손검 공격력 주문서 10%', '주문서', 1587530)
+(103, '두손검 공격력 주문서 100%', '주문서', 79294, '103.png'),
+(104, '두손검 공격력 주문서 60%', '주문서', 319055, '104.png'),
+(105, '두손검 공격력 주문서 10%', '주문서', 1587530, '105.png')
 """)
+
+# 기존 행 image_path 업데이트
+for _id in [101, 102, 103, 104, 105]:
+    conn.execute(f"UPDATE item_master SET image_path = '{_id}.png' WHERE item_id = {_id} AND image_path IS NULL")
 
 # id, 확률, +STR, +공격력
 conn.execute("""
@@ -281,8 +297,9 @@ INSERT OR IGNORE INTO scroll_detail VALUES
 # 혼돈의 주문서
 conn.execute("""
 INSERT OR IGNORE INTO item_master VALUES
-(106, '혼돈의 주문서 60%', '혼돈주문서', 1824509)
+(106, '혼돈의 주문서 60%', '혼돈주문서', 1824509, '106.png')
 """)
+conn.execute("UPDATE item_master SET image_path = '106.png' WHERE item_id = 106 AND image_path IS NULL")
 
 conn.execute("""
 INSERT OR IGNORE INTO chaos_scroll_detail VALUES
@@ -293,8 +310,9 @@ INSERT OR IGNORE INTO chaos_scroll_detail VALUES
 
 conn.execute("""
 INSERT OR IGNORE INTO item_master VALUES
-(201, '미라클 큐브', '큐브', 500000)
+(201, '미라클 큐브', '큐브', 500000, '미라클큐브.png')
 """)
+conn.execute("UPDATE item_master SET image_path = '미라클큐브.png' WHERE item_id = 201 AND image_path IS NULL")
 
 conn.execute("""
 INSERT OR IGNORE INTO cube_upgrade_prob VALUES

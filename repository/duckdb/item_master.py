@@ -22,3 +22,11 @@ class DuckDBItemMasterRepository(ItemMasterRepository):
                 WHERE item_type = ?
                 ORDER BY item_id
             """, [item_type]).fetchall()
+
+    def get_image_path(self, item_id: int) -> str | None:
+        """아이템 이미지 경로를 조회합니다."""
+        with get_connection() as conn:
+            row = conn.execute("""
+                SELECT image_path FROM item_master WHERE item_id = ?
+            """, [item_id]).fetchone()
+            return row[0] if row else None
